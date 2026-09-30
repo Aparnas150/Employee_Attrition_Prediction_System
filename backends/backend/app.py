@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 import joblib
@@ -18,6 +18,7 @@ base_path = os.path.dirname(
 
 models_path = os.path.join(base_path, "models")
 database_path = os.path.join(base_path, "database", "attrition.db")
+frontend_path = os.path.join(base_path, "frontend")
 
 model = joblib.load(
     os.path.join(models_path, "logistic_model.pkl")
@@ -30,9 +31,42 @@ feature_names = joblib.load(
 
 @app.route("/")
 def home():
-    return jsonify({
-        "message": "Employee Attrition Prediction API is running!"
-    })
+    return send_from_directory(
+        frontend_path,
+        "index.html"
+    )
+
+
+@app.route("/index.html")
+def index_page():
+    return send_from_directory(
+        frontend_path,
+        "index.html"
+    )
+
+
+@app.route("/risk.html")
+def risk_page():
+    return send_from_directory(
+        frontend_path,
+        "risk.html"
+    )
+
+
+@app.route("/history.html")
+def history_page():
+    return send_from_directory(
+        frontend_path,
+        "history.html"
+    )
+
+
+@app.route("/analytics.html")
+def analytics_page():
+    return send_from_directory(
+        frontend_path,
+        "analytics.html"
+    )
 
 
 @app.route("/predict", methods=["POST"])
@@ -264,3 +298,4 @@ if __name__ == "__main__":
         debug=True,
         port=5000
     )
+
