@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Employee Attrition Risk</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: #172033;
+            color: white;
+            padding: 25px 15px;
+            flex-shrink: 0;
+        }
+
+        .sidebar h2 {
+            margin: 0 0 30px 10px;
+            font-size: 21px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #d9deea;
+            text-decoration: none;
+            padding: 13px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #2d3a54;
+            color: white;
+        }
+
+        .main {
+            flex: 1;
+            padding: 35px;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #172033;
+        }
+
+        .subtitle {
+            color: #687386;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 14px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.07);
+        }
+
+        .section-title {
+            font-size: 19px;
+            font-weight: bold;
+            color: #172033;
+            margin-bottom: 20px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #344054;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #d0d5dd;
+            border-radius: 7px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .btn-predict {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: #172033;
+            color: white;
+            border: none;
+            border-radius: 9px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-predict:hover {
+            background: #2d3a54;
+        }
+
+        #resultCard {
+            display: none;
+        }
+
+        .result-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .result-box {
+            background: #f5f7fb;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .result-label {
+            color: #667085;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        #riskLevel,
+        #riskProbability {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        #riskMessage {
+            color: #344054;
+        }
+
+        @media (max-width: 1000px) {
+
+            .row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+        }
+
+        @media (max-width: 700px) {
+
+            .layout {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+            }
+
+            .main {
+                padding: 20px;
+            }
+
+            .row,
+            .result-row {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="layout">
+
+    <div class="sidebar">
+
+        <h2>HR Intelligence</h2>
+
+        <a href="index.html">Dashboard</a>
+
+        <a href="risk.html" class="active">
+            Employee Risk
+        </a>
+
+        <a href="history.html">
+            Prediction History
+        </a>
+
+        <a href="analytics.html">
+            Analytics
+        </a>
+
+    </div>
+
+
+    <div class="main">
+
+        <h1>Employee Risk Assessment</h1>
+
+        <p class="subtitle">
+            Enter employee information to estimate attrition risk.
+        </p>
+
+
+        <!-- PERSONAL INFORMATION -->
+
+        <div class="card">
+
+            <div class="section-title">
+                Personal Information
+            </div>
+
+            <div class="row">
+
+                <div>
+                    <label>Age</label>
+                    <input id="age" type="number" value="30">
+                </div>
+
+                <div>
+                    <label>Gender</label>
+
+                    <select id="gender">
+
+                        <option value="Female">
+                            Female
+                        </option>
+
+                        <option value="Male">
+                            Male
+                        </option>
+
+                    </select>
+                </div>
+
+                <div>
+                    <label>Marital Status</label>
+
+                    <select id="maritalStatus">
+
+                        <option value="Single">
+                            Single
+                        </option>
+
+                        <option value="Married">
+                            Married
+                        </option>
+
+                        <option value="Divorced">
+                            Divorced
+                        </option>
+
+                    </select>
+                </div>
+
+                <div>
+                    <label>Distance From Home</label>
+
+                    <input
+                        id="distance"
+                        type="number"
+                        value="5">
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- JOB INFORMATION -->
+
+        <div class="card">
+
+            <div class="section-title">
+                Job Information
+            </div>
+
+            <div class="row">
+
+                <div>
+                    <label>Department</label>
+
+                    <select id="department">
+
+                        <option value="Sales">
+                            Sales
+                        </option>
+
+                        <option value="Research & Development">
+                            Research & Development
+                        </option>
+
+                        <option value="Human Resources">
+                            Human Resources
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div>
+                    <label>Job Role</label>
+
+                    <select id="jobRole">
+
+                        <option value="Human Resources">
+                            Human Resources
+                        </option>
+
+                        <option value="Laboratory Technician">
+                            Laboratory Technician
+                        </option>
+
+                        <option value="Manager">
+                            Manager
+                        </option>
+
+                        <option value="Manufacturing Director">
+                            Manufacturing Director
+                        </option>
+
+                        <option value="Research Director">
+                            Research Director
+                        </option>
+
+                        <option value="Research Scientist">
+                            Research Scientist
+                        </option>
+
+                        <option value="Sales Executive">
+                            Sales Executive
+                        </option>
+
+                        <option value="Sales Representative">
+                            Sales Representative
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div>
+                    <label>Education Field</label>
+
+                    <select id="educationField">
+
+                        <option value="Life Sciences">
+                            Life Sciences
+                        </option>
+
+                        <option value="Marketing">
+                            Marketing
+                        </option>
+
+                        <option value="Medical">
+                            Medical
+                        </option>
+
+                        <option value="Other">
+                            Other
+                        </option>
+
+                        <option value="Technical Degree">
+                            Technical Degree
+                        </option>
+
+                        <option value="Human Resources">
+                            Human Resources
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div>
+                    <label>Job Level</label>
+
+                    <select id="jobLevel">
+
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+
+                    </select>
+                </div>
+
+
+                <div>
+                    <label>Business Travel</label>
+
+                    <select id="travel">
+
+                        <option value="Non-Travel">
+                            Non-Travel
+                        </option>
+
+                        <option value="Travel_Rarely">
+                            Travel Rarely
+                        </option>
+
+                        <option value="Travel_Frequently">
+                            Travel Frequently
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div>
+                    <label>Overtime</label>
+
+                    <select id="overtime">
+
+                        <option value="No">
+                            No
+                        </option>
+
+                        <option value="Yes">
+                            Yes
+                        </option>
+
+                    </select>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- FINANCIAL INFORMATION -->
+
+        <div class="card">
+
+            <div class="section-title">
+                Financial & Work Information
+            </div>
+
+            <div class="row">
+
+                <div>
+                    <label>Monthly Income</label>
+
+                    <input
+                        id="income"
+                        type="number"
+                        value="5000">
+                </div>
+
+
+                <div>
+                    <label>Monthly Rate</label>
+
+                    <input
+                        id="monthlyRate"
+                        type="number"
+                        value="15000">
+                </div>
+
+
+                <div>
+                    <label>Daily Rate</label>
+
+                    <input
+                        id="dailyRate"
+                        type="number"
+                        value="800">
+                </div>
+
+
+                <div>
+                    <label>Hourly Rate</label>
+
+                    <input
+                        id="hourlyRate"
+                        type="number"
+                        value="60">
+                </div>
+
+
+                <div>
+                    <label>Percent Salary Hike</label>
+
+                    <input
+                        id="salaryHike"
+                        type="number"
+                        value="15">
+                </div>
+
+
+                <div>
+                    <label>Stock Option Level</label>
+
+                    <select id="stockOption">
+
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SATISFACTION -->
+
+        <div class="card">
+
+            <div class="section-title">
+                Satisfaction & Performance
+            </div>
+
+            <div class="row">
+
+                <div>
+                    <label>Job Satisfaction</label>
+
+                    <select id="satisfaction">
+
+                        <option value="1">
+                            1 - Low
+                        </option>
+
+                        <option value="2">2</option>
+
+                        <option value="3">3</option>
+
+                        <option value="4">
+                            4 - High
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div>
+                    <label>Environment Satisfaction</label>
+
+                    <select id="environment">
+
+                        <option value="1">
+                            1 - Low
+                        </option>
+
+                        <option value="2">2</option>
+
+                        <option value="3">3</option>
+
+                        <option value="4">
+                            4 - High
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div>
+                    <label>Job Involvement</label>
+
+                    <select id="jobInvolvement">
+
+                        <option value="1">
+                            1 - Low
+                        </option>
+
+                        <option value="2">2</option>
+
+                        <option value="3">3</option>
+
+                        <option value="4">
+                            4 - High
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div>
+                    <label>Performance Rating</label>
+
+                    <select id="performance">
+
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+
+                    </select>
+                </div>
+
+
+                <div>
+                    <label>Relationship Satisfaction</label>
+
+                    <select id="relationship">
+
+                        <option value="1">
+                            1 - Low
+                        </option>
+
+                        <option value="2">2</option>
+
+                        <option value="3">3</option>
+
+                        <option value="4">
+                            4 - High
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div>
+                    <label>Work-Life Balance</label>
+
+                    <select id="workLife">
+
+                        <option value="1">
+                            1 - Low
+                        </option>
+
+                        <option value="2">2</option>
+
+                        <option value="3">3</option>
+
+                        <option value="4">
+                            4 - High
+                        </option>
+
+                    </select>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- EXPERIENCE -->
+
+        <div class="card">
+
+            <div class="section-title">
+                Experience & Career Information
+            </div>
+
+            <div class="row">
+
+                <div>
+                    <label>Total Working Years</label>
+
+                    <input
+                        id="workingYears"
+                        type="number"
+                        value="5">
+                </div>
+
+
+                <div>
+                    <label>Years at Company</label>
+
+                    <input
+                        id="companyYears"
+                        type="number"
+                        value="3">
+                </div>
+
+
+                <div>
+                    <label>Years in Current Role</label>
+
+                    <input
+                        id="currentRoleYears"
+                        type="number"
+                        value="2">
+                </div>
+
+
+                <div>
+                    <label>Years Since Last Promotion</label>
+
+                    <input
+                        id="promotionYears"
+                        type="number"
+                        value="1">
+                </div>
+
+
+                <div>
+                    <label>Years With Current Manager</label>
+
+                    <input
+                        id="managerYears"
+                        type="number"
+                        value="2">
+                </div>
+
+
+                <div>
+                    <label>Companies Worked</label>
+
+                    <input
+                        id="companiesWorked"
+                        type="number"
+                        value="1">
+                </div>
+
+
+                <div>
+                    <label>Training Times Last Year</label>
+
+                    <input
+                        id="training"
+                        type="number"
+                        value="3">
+                </div>
+
+
+                <div>
+                    <label>Education Level</label>
+
+                    <select id="education">
+
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+
+                        <option value="3" selected>
+                            3
+                        </option>
+
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PREDICTION BUTTON -->
+
+        <div class="card">
+
+       <button
+    id="predictButton"
+    type="button"
+    class="btn-predict"
+    onclick="predictRisk(event);">
+    Predict Attrition Risk
+</button>
+        </div>
+
+
+        <!-- RESULT -->
+
+        <div
+            class="card"
+            id="resultCard">
+
+            <div class="section-title">
+                Prediction Result
+            </div>
+
+            <div class="result-row">
+
+                <div class="result-box">
+
+                    <div class="result-label">
+                        Risk Level
+                    </div>
+
+                    <div id="riskLevel">
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="result-box">
+
+                    <div class="result-label">
+                        Attrition Probability
+                    </div>
+
+                    <div id="riskProbability">
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="result-box">
+
+                    <div class="result-label">
+                        Assessment
+                    </div>
+
+                    <div id="riskMessage">
+                        -
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="./script.js"></script>
+
+</body>
+
+</html>
