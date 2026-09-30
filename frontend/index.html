@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -123,8 +124,6 @@
 
 <body>
 
-<!-- SIDEBAR -->
-
 <div class="sidebar">
 
     <div class="logo">
@@ -150,8 +149,6 @@
 </div>
 
 
-<!-- MAIN CONTENT -->
-
 <div class="main">
 
     <div class="header">
@@ -160,13 +157,10 @@
     </div>
 
 
-    <!-- STATISTICS -->
-
     <div class="row g-4 mt-3">
 
         <div class="col-md-3">
             <div class="stat-card">
-
                 <div class="stat-title">
                     Total Predictions
                 </div>
@@ -176,14 +170,12 @@
                     id="totalPredictions">
                     0
                 </div>
-
             </div>
         </div>
 
 
         <div class="col-md-3">
             <div class="stat-card">
-
                 <div class="stat-title">
                     Low Risk
                 </div>
@@ -193,14 +185,12 @@
                     id="lowRisk">
                     0
                 </div>
-
             </div>
         </div>
 
 
         <div class="col-md-3">
             <div class="stat-card">
-
                 <div class="stat-title">
                     Medium Risk
                 </div>
@@ -210,14 +200,12 @@
                     id="mediumRisk">
                     0
                 </div>
-
             </div>
         </div>
 
 
         <div class="col-md-3">
             <div class="stat-card">
-
                 <div class="stat-title">
                     High Risk
                 </div>
@@ -227,14 +215,11 @@
                     id="highRisk">
                     0
                 </div>
-
             </div>
         </div>
 
     </div>
 
-
-    <!-- RISK OVERVIEW -->
 
     <div class="risk-card">
 
@@ -245,7 +230,6 @@
         <div class="row">
 
             <div class="col-md-4">
-
                 <div class="risk-box">
 
                     <div class="stat-title">
@@ -259,12 +243,10 @@
                     </div>
 
                 </div>
-
             </div>
 
 
             <div class="col-md-4">
-
                 <div class="risk-box">
 
                     <div class="stat-title">
@@ -278,12 +260,10 @@
                     </div>
 
                 </div>
-
             </div>
 
 
             <div class="col-md-4">
-
                 <div class="risk-box">
 
                     <div class="stat-title">
@@ -297,7 +277,6 @@
                     </div>
 
                 </div>
-
             </div>
 
         </div>
@@ -323,8 +302,6 @@
 </div>
 
 
-<!-- JAVASCRIPT -->
-
 <script>
 
 async function loadDashboard() {
@@ -332,23 +309,22 @@ async function loadDashboard() {
     try {
 
         const response = await fetch(
-            "http://127.0.0.1:5000/history"
+            "https://employee-attrition-prediction-system-ydid.onrender.com/history"
         );
+
+        if (!response.ok) {
+            throw new Error("Unable to load prediction history");
+        }
 
         const data = await response.json();
 
-
-        if (data.error) {
-
-            console.error(data.error);
-
+        if (!Array.isArray(data)) {
+            console.error("Invalid history data");
             return;
-
         }
 
 
         const total = data.length;
-
 
         let low = 0;
         let medium = 0;
@@ -358,19 +334,15 @@ async function loadDashboard() {
         data.forEach(function(item) {
 
             if (item.risk_level === "Low") {
-
                 low++;
-
             }
+
             else if (item.risk_level === "Medium") {
-
                 medium++;
-
             }
+
             else if (item.risk_level === "High") {
-
                 high++;
-
             }
 
         });
@@ -401,23 +373,24 @@ async function loadDashboard() {
             document.getElementById(
                 "lowPercentage"
             ).textContent =
-                Math.round((low / total) * 100) + "%";
+                ((low / total) * 100).toFixed(1) + "%";
 
 
             document.getElementById(
                 "mediumPercentage"
             ).textContent =
-                Math.round((medium / total) * 100) + "%";
+                ((medium / total) * 100).toFixed(1) + "%";
 
 
             document.getElementById(
                 "highPercentage"
             ).textContent =
-                Math.round((high / total) * 100) + "%";
+                ((high / total) * 100).toFixed(1) + "%";
 
         }
 
     }
+
     catch (error) {
 
         console.error(
@@ -434,6 +407,6 @@ loadDashboard();
 
 </script>
 
-
 </body>
 </html>
+```
