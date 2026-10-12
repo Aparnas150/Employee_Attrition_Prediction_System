@@ -71,7 +71,7 @@
             background: white;
             border-radius: 15px;
             padding: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
         }
 
         .table thead {
@@ -116,6 +116,12 @@
             padding: 30px;
             color: #64748b;
         }
+
+        .error-message {
+            text-align: center;
+            padding: 30px;
+            color: #dc2626;
+        }
     </style>
 </head>
 
@@ -155,7 +161,6 @@
         <p class="page-subtitle">
             View previously generated employee attrition risk predictions.
         </p>
-
 
         <div class="card-box">
 
@@ -201,19 +206,29 @@
 
         async function loadHistory() {
 
+            const table = document.getElementById("historyTable");
+
             try {
 
                 const response = await fetch(
-"https://employee-attrition-prediction-system-ydid.onrender.com/history"                );
+                    "https://employee-attrition-prediction-system-ydid.onrender.com/history",
+                    {
+                        method: "GET",
+                        cache: "no-store"
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Server returned status: " + response.status
+                    );
+                }
 
                 const data = await response.json();
 
-                const table =
-                    document.getElementById("historyTable");
-
                 table.innerHTML = "";
 
-                if (data.length === 0) {
+                if (!Array.isArray(data) || data.length === 0) {
 
                     table.innerHTML = `
                         <tr>
@@ -232,71 +247,85 @@
                     let riskClass = "";
 
                     if (record.risk_level === "Low") {
+
                         riskClass = "risk-low";
-                    }
-                    else if (record.risk_level === "Medium") {
+
+                    } else if (record.risk_level === "Medium") {
+
                         riskClass = "risk-medium";
-                    }
-                    else {
+
+                    } else {
+
                         riskClass = "risk-high";
+
                     }
 
 
                     const row = document.createElement("tr");
 
+
                     row.innerHTML = `
 
-                        <td>${record.id}</td>
+                        <td>${record.id ?? "-"}</td>
 
-                        <td>${record.age}</td>
+                        <td>${record.age ?? "-"}</td>
 
-                        <td>${record.gender}</td>
+                        <td>${record.gender ?? "-"}</td>
 
-                        <td>${record.department}</td>
+                        <td>${record.department ?? "-"}</td>
 
-                        <td>${record.job_role}</td>
+                        <td>${record.job_role ?? "-"}</td>
 
-                        <td>${record.overtime}</td>
+                        <td>${record.overtime ?? "-"}</td>
 
-                        <td>${record.job_satisfaction}</td>
+                        <td>${record.job_satisfaction ?? "-"}</td>
 
                         <td>
                             <span class="risk-badge ${riskClass}">
-                                ${record.risk_level}
+                                ${record.risk_level ?? "-"}
                             </span>
                         </td>
 
                         <td>
                             <strong>
-                                ${record.attrition_probability}%
+                                ${record.attrition_probability ?? 0}%
                             </strong>
                         </td>
 
                         <td>
-                            ${record.created_at}
+                            ${record.created_at ?? "-"}
                         </td>
 
                     `;
+
 
                     table.appendChild(row);
 
                 });
 
             }
+
+
             catch (error) {
 
-                console.error(error);
+                console.error(
+                    "History loading error:",
+                    error
+                );
 
-                document.getElementById("historyTable").innerHTML = `
+
+                table.innerHTML = `
 
                     <tr>
-                        <td colspan="10" class="loading">
+                        <td colspan="10" class="error-message">
                             Unable to load prediction history.
                         </td>
                     </tr>
 
                 `;
+
             }
+
         }
 
 
@@ -306,3 +335,4 @@
 
 </body>
 </html>
+
