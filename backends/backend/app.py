@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
@@ -29,50 +30,58 @@ feature_names = joblib.load(
 )
 
 
+# ---------- FRONTEND PAGES ----------
+
 @app.route("/")
 def home():
-    return send_from_directory(
-        frontend_path,
-        "index.html"
-    )
+    return send_from_directory(frontend_path, "index.html")
 
 
 @app.route("/index.html")
 def index_page():
-    return send_from_directory(
-        frontend_path,
-        "index.html"
-    )
+    return send_from_directory(frontend_path, "index.html")
 
 
 @app.route("/risk.html")
 def risk_page():
-    return send_from_directory(
-        frontend_path,
-        "risk.html"
-    )
+    return send_from_directory(frontend_path, "risk.html")
 
 
 @app.route("/history.html")
 def history_page():
-    return send_from_directory(
-        frontend_path,
-        "history.html"
-    )
+    return send_from_directory(frontend_path, "history.html")
 
 
 @app.route("/analytics.html")
 def analytics_page():
-    return send_from_directory(
-        frontend_path,
-        "analytics.html"
-    )
+    return send_from_directory(frontend_path, "analytics.html")
 
+
+# ---------- JAVASCRIPT FILE ----------
+
+@app.route("/script.js")
+def script_file():
+    return send_from_directory(frontend_path, "script.js")
+
+
+# ---------- CSS FILE (IF PRESENT) ----------
+
+@app.route("/style.css")
+def style_file():
+    return send_from_directory(frontend_path, "style.css")
+
+
+# ---------- PREDICTION API ----------
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    connection = None
+
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
+
+        if not isinstance(data, dict):
+            return jsonify({"error": "Invalid prediction data."}), 400
 
         input_data = {}
 
@@ -84,13 +93,10 @@ def predict():
             columns=feature_names
         )
 
-        prediction = model.predict(input_df)[0]
-        probability = model.predict_proba(input_df)[0][1]
+        prediction = int(model.predict(input_df)[0])
+        probability = float(model.predict_proba(input_df)[0][1])
 
-        probability_percent = round(
-            probability * 100,
-            2
-        )
+        probability_percent = round(probability * 100, 2)
 
         if probability_percent < 40:
             risk = "Low"
@@ -99,70 +105,33 @@ def predict():
         else:
             risk = "High"
 
-        if data.get("Gender_Male", 0) == 1:
-            gender = "Male"
-        else:
-            gender = "Female"
+        gender = "Male" if data.get("Gender_Male", 0) == 1 else "Female"
 
-        if data.get(
-            "Department_Research & Development",
-            0
-        ) == 1:
+        if data.get("Department_Research & Development", 0) == 1:
             department = "Research & Development"
-
-        elif data.get(
-            "Department_Sales",
-            0
-        ) == 1:
+        elif data.get("Department_Sales", 0) == 1:
             department = "Sales"
-
         else:
             department = "Human Resources"
 
-        if data.get("OverTime_Yes", 0) == 1:
-            overtime = "Yes"
-        else:
-            overtime = "No"
+        overtime = "Yes" if data.get("OverTime_Yes", 0) == 1 else "No"
 
-        if data.get(
-            "MaritalStatus_Married",
-            0
-        ) == 1:
+        if data.get("MaritalStatus_Married", 0) == 1:
             marital_status = "Married"
-
-        elif data.get(
-            "MaritalStatus_Single",
-            0
-        ) == 1:
+        elif data.get("MaritalStatus_Single", 0) == 1:
             marital_status = "Single"
-
         else:
             marital_status = "Divorced"
 
         job_roles = {
-            "JobRole_Human Resources":
-                "Human Resources",
-
-            "JobRole_Laboratory Technician":
-                "Laboratory Technician",
-
-            "JobRole_Manager":
-                "Manager",
-
-            "JobRole_Manufacturing Director":
-                "Manufacturing Director",
-
-            "JobRole_Research Director":
-                "Research Director",
-
-            "JobRole_Research Scientist":
-                "Research Scientist",
-
-            "JobRole_Sales Executive":
-                "Sales Executive",
-
-            "JobRole_Sales Representative":
-                "Sales Representative"
+            "JobRole_Human Resources": "Human Resources",
+            "JobRole_Laboratory Technician": "Laboratory Technician",
+            "JobRole_Manager": "Manager",
+            "JobRole_Manufacturing Director": "Manufacturing Director",
+            "JobRole_Research Director": "Research Director",
+            "JobRole_Research Scientist": "Research Scientist",
+            "JobRole_Sales Executive": "Sales Executive",
+            "JobRole_Sales Representative": "Sales Representative"
         }
 
         job_role = "Other"
@@ -172,10 +141,7 @@ def predict():
                 job_role = role
                 break
 
-        connection = sqlite3.connect(
-            database_path
-        )
-
+        connection = sqlite3.connect(database_path)
         cursor = connection.cursor()
 
         cursor.execute(
@@ -213,30 +179,34 @@ def predict():
         )
 
         connection.commit()
-        connection.close()
 
         return jsonify({
-            "prediction": int(prediction),
-            "attrition_probability":
-                probability_percent,
+            "prediction": prediction,
+            "attrition_probability": probability_percent,
             "risk_level": risk,
-            "message":
-                "Prediction saved successfully!"
+            "message": "Prediction saved successfully!"
         })
 
     except Exception as e:
-        return jsonify({
-            "error": str(e)
-        }), 400
+        if connection:
+            connection.rollback()
 
+        app.logger.exception("Prediction failed")
+        return jsonify({"error": str(e)}), 400
+
+    finally:
+        if connection:
+            connection.close()
+
+
+# ---------- PREDICTION HISTORY API ----------
 
 @app.route("/history", methods=["GET"])
 def history():
-    try:
-        connection = sqlite3.connect(
-            database_path
-        )
+    connection = None
 
+    try:
+        connection = sqlite3.connect(database_path)
         cursor = connection.cursor()
 
         cursor.execute(
@@ -263,8 +233,6 @@ def history():
 
         rows = cursor.fetchall()
 
-        connection.close()
-
         history_data = []
 
         for row in rows:
@@ -288,9 +256,12 @@ def history():
         return jsonify(history_data)
 
     except Exception as e:
-        return jsonify({
-            "error": str(e)
-        }), 400
+        app.logger.exception("History retrieval failed")
+        return jsonify({"error": str(e)}), 400
+
+    finally:
+        if connection:
+            connection.close()
 
 
 if __name__ == "__main__":
@@ -298,4 +269,3 @@ if __name__ == "__main__":
         debug=True,
         port=5000
     )
-
